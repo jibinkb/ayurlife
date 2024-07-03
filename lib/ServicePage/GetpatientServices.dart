@@ -151,7 +151,7 @@ class DashboardDetails{
           'Authorization': 'Bearer $token'},
         body: {
           'name':name,
-          'excecutive': name,
+          'excecutive': 'Hentry Harm',
           'payment': paymentoption,
           'phone': whatsappNo,
           'address': address,
@@ -173,7 +173,6 @@ class DashboardDetails{
 
         return APIResponse(data: data, error: error, errorMessage: '',);
       } else {
-        print("response code------${response.statusCode}");
         return APIResponse(error: true, errorMessage: 'Failed to register patient: ${response.statusCode}', data: null,
         );
       }
