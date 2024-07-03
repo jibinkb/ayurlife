@@ -27,29 +27,42 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
+  }
+
+@override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
     searchPatientList();
   }
 
 
-
-
   Future<void> searchPatientList({String query = ''}) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
     final response = await dashboardservices.GetPatientslist(widget.token);
     status = response.data['status'].toString();
 
     if (status == 'true') {
+      Navigator.of(context, rootNavigator: true).pop();
       var result = response.data['patient'] != null ? response.data['patient'] : [];
       List<Patient> patients =
       (result as List).map((i) => Patient.fromJson(i)).toList();
 
 
-      Provider.of<AuthProvider>(context, listen: false).setPatients(patients);
-      // Filter patients based on search query
       if (query.isNotEmpty) {
         patients = patients.where((patient) {
           return patient.name.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
+      Provider.of<AuthProvider>(context, listen: false).setPatients(patients);
 
     }
   }
