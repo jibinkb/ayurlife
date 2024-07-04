@@ -23,50 +23,38 @@ class _DashboardState extends State<Dashboard> {
   PatientDetail? patientDetail;
   final TextEditingController _searchController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
-  }
-
-@override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
     searchPatientList();
   }
+  
 
 
   Future<void> searchPatientList({String query = ''}) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
     final response = await dashboardservices.GetPatientslist(widget.token);
-    status = response.data['status'].toString();
 
+    if(response.error){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Server issue!')),
+      );
+    }else{
+    status = response.data['status'].toString();
     if (status == 'true') {
-      Navigator.of(context, rootNavigator: true).pop();
       var result = response.data['patient'] != null ? response.data['patient'] : [];
       List<Patient> patients =
       (result as List).map((i) => Patient.fromJson(i)).toList();
 
-
+      // Filter patients based on search query
       if (query.isNotEmpty) {
         patients = patients.where((patient) {
           return patient.name.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
       Provider.of<AuthProvider>(context, listen: false).setPatients(patients);
-
+    }
     }
   }
-
 
 
   @override
@@ -114,6 +102,7 @@ class _DashboardState extends State<Dashboard> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () {
+                        FocusScope.of(context).unfocus();
                         searchPatientList(query: _searchController.text);
                       },
                       style: ElevatedButton.styleFrom(
@@ -174,7 +163,7 @@ class _DashboardState extends State<Dashboard> {
                                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                                 ),
                                 Text(
-                                  patient.name,
+                                  patient.user,
                                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 6),
@@ -228,6 +217,7 @@ class _DashboardState extends State<Dashboard> {
         floatingActionButton: FloatingActionButton.extended(
           extendedPadding: EdgeInsets.all(MediaQuery.of(context).size.width / 3),
           onPressed: () {
+            _searchController.clear();
             Navigator.push(
               context,
               MaterialPageRoute(
